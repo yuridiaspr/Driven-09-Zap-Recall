@@ -1,6 +1,7 @@
 import imagem from "../assets/img/logo.png";
 import Footer from "./Footer";
 import Questions from "./Questions";
+import { useState } from "react";
 
 const deckJavaScript = [
   {
@@ -38,8 +39,15 @@ const deckJavaScript = [
   },
 ];
 
-export default function HomeScreen(DeckEscolhido) {
-  DeckEscolhido = deckJavaScript;
+export default function HomeScreen() {
+  const ChosenDeckInitial = deckJavaScript;
+
+  const [Concluded, setConcluded] = useState(0);
+  const [AllowClick, setAllowClick] = useState(false);
+  const [AlreadyClicked, setAlreadyClicked] = useState(false);
+
+  const TotalQuestions = ChosenDeckInitial.length;
+
   return (
     <div className="screen-container">
       <div className="logo-container">
@@ -47,8 +55,14 @@ export default function HomeScreen(DeckEscolhido) {
         <h1>ZapRecall</h1>
       </div>
 
-      <Questions DeckEscolhido={DeckEscolhido} />
-      <Footer />
+      <Questions setAllowClick={setAllowClick} ChosenDeck={ChosenDeckInitial} />
+      <Footer
+        setAllowClick={setAllowClick}
+        AllowClick={AllowClick}
+        TotalQuestions={TotalQuestions}
+        Concluded={Concluded}
+        setConcluded={setConcluded}
+      />
     </div>
   );
 }
