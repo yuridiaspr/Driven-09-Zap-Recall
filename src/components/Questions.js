@@ -8,10 +8,23 @@ import { useState } from "react";
 function EachQuestion(props) {
   const [IfClicked, setIfClicked] = useState(false); // if the question was clicked
   const [IfClickedAnswer, setIfClickedAnswer] = useState(false); // if the answer was clicked
-  const [EachAlreadyClicked, setEachAlreadyClicked] = useState(false);
+  const [EachAlreadyClicked, setEachAlreadyClicked] = useState(
+    props.ChosenDeckIfKnow
+  );
 
   function QuestionShown(props) {
-    if (IfClicked === true && props.AnyOpen <= 1 && IfClickedAnswer === false) {
+    ChangeIfKnow();
+    if (EachAlreadyClicked === 1) {
+      return <WrongQuestion indice={props.indice} />;
+    } else if (EachAlreadyClicked === 2) {
+      return <AlmostQuestion indice={props.indice} />;
+    } else if (EachAlreadyClicked === 3) {
+      return <ZapQuestion indice={props.indice} />;
+    } else if (
+      IfClicked === true &&
+      props.AnyOpen <= 1 &&
+      IfClickedAnswer === false
+    ) {
       return (
         <OpenedQuestion
           ChosenDeckQuestion={props.ChosenDeckQuestion}
@@ -23,11 +36,13 @@ function EachQuestion(props) {
       props.AnyOpen <= 1 &&
       IfClickedAnswer === true
     ) {
-      props.setAllowClick(true);
       return (
         <OpenedQuestionAnswer
           ChosenDeckAnswer={props.ChosenDeckAnswer}
           indice={props.indice}
+          setAllowClick={props.setAllowClick}
+          AlreadyClicked={props.AlreadyClicked}
+          AllowClick={props.AllowClick}
         />
       );
     } else {
@@ -37,28 +52,87 @@ function EachQuestion(props) {
 
   function ClosedQuestion(props) {
     return (
-      <div onClick={SeeTheQuestion} className="pergunta-fechada">
-        <p>Pergunta {props.indice + 1}</p>
-        <img src={seta_play} alt="seta play" />
+      <div data-identifier="flashcard" className="pergunta-fechada">
+        <p data-identifier="flashcard-index-item">
+          Pergunta {props.indice + 1}
+        </p>
+        <img
+          onClick={SeeTheQuestion}
+          data-identifier="flashcard-show-btn"
+          src={seta_play}
+          alt="seta play"
+        />
       </div>
     );
   }
 
   function OpenedQuestion(props) {
-    console.log("OpenedQuestion");
     return (
-      <div onClick={SeeTheAnswer} className="pergunta-aberta">
-        <p>{props.ChosenDeckQuestion}</p>
-        <img onClick={SeeTheAnswer} src={seta_virar} alt="seta virar" />
+      <div className="pergunta-aberta">
+        <p data-identifier="flashcard-question">{props.ChosenDeckQuestion}</p>
+        <img
+          data-identifier="flashcard-turn-btn"
+          onClick={SeeTheAnswer}
+          src={seta_virar}
+          alt="seta virar"
+        />
       </div>
     );
   }
 
   function OpenedQuestionAnswer(props) {
-    console.log("OpenedQuestionAnswer");
+    props.setAllowClick(true);
+    if (props.AllowClick === false && props.AlreadyClicked !== 0) {
+      props.setAllowClick(false);
+    }
     return (
       <div className="pergunta-aberta">
-        <p>{props.ChosenDeckAnswer}</p>
+        <p data-identifier="flashcard-answer">{props.ChosenDeckAnswer}</p>
+      </div>
+    );
+  }
+
+  function WrongQuestion(props) {
+    return (
+      <div className="pergunta-fechada line-through wrong">
+        <p data-identifier="flashcard-index-item">
+          Pergunta {props.indice + 1}
+        </p>
+        <img
+          data-identifier="flashcard-status"
+          src={icone_erro}
+          alt="wrong question logo"
+        />
+      </div>
+    );
+  }
+
+  function AlmostQuestion(props) {
+    return (
+      <div className="pergunta-fechada line-through almost">
+        <p data-identifier="flashcard-index-item">
+          Pergunta {props.indice + 1}
+        </p>
+        <img
+          data-identifier="flashcard-status"
+          src={icone_quase}
+          alt="almost question logo"
+        />
+      </div>
+    );
+  }
+
+  function ZapQuestion(props) {
+    return (
+      <div className="pergunta-fechada line-through zap">
+        <p data-identifier="flashcard-index-item">
+          Pergunta {props.indice + 1}
+        </p>
+        <img
+          data-identifier="flashcard-status"
+          src={icone_certo}
+          alt="zap question logo"
+        />
       </div>
     );
   }
@@ -74,8 +148,27 @@ function EachQuestion(props) {
     setIfClickedAnswer(true);
   }
 
+  function ChangeIfKnow() {
+    if (
+      props.AlreadyClicked !== 0 &&
+      IfClicked === true &&
+      props.AnyOpen <= 1 &&
+      IfClickedAnswer === true
+    ) {
+      setEachAlreadyClicked(props.AlreadyClicked);
+      props.setAlreadyClicked(0);
+      setIfClickedAnswer(false);
+      setIfClicked(false);
+      props.setAlreadyClicked(0);
+      props.setAnyOpen(0);
+    }
+  }
+
   return (
     <QuestionShown
+      AlreadyClicked={props.AlreadyClicked}
+      ChosenDeckIfKnow={props.ChosenDeckIfKnow}
+      AllowClick={props.AllowClick}
       setAllowClick={props.setAllowClick}
       ChosenDeckQuestion={props.ChosenDeckQuestion}
       ChosenDeckAnswer={props.ChosenDeckAnswer}
@@ -92,9 +185,13 @@ export default function Questions(props) {
     <>
       {props.ChosenDeck.map((s, index) => (
         <EachQuestion
+          AlreadyClicked={props.AlreadyClicked}
+          AllowClick={props.AllowClick}
           setAllowClick={props.setAllowClick}
+          setAlreadyClicked={props.setAlreadyClicked}
           ChosenDeckQuestion={s.Question}
           ChosenDeckAnswer={s.Answer}
+          ChosenDeckIfKnow={s.IfKnow}
           AnyOpen={AnyOpen}
           setAnyOpen={setAnyOpen}
           indice={index}
